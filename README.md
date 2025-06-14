@@ -1,51 +1,112 @@
-# ComfyUI-PuLID-Flux-Enhanced
-adapted from https://github.com/balazik/ComfyUI-PuLID-Flux
+# ComfyUI-PuLID-Flux-Chroma
 
-workflow: see example flux_pulid_multi.json
+🎨 **The first PuLID implementation with full Chroma model support for ComfyUI!**
 
-## update oct.28 2024
-Add an optional prior image input for the node. When using the train_weight method, the prior image will act as the main id image, which will lead the other id images to sum up to an optimized id embedding.
+Face-consistent character generation using PuLID (Pure and Lightning ID) with both FLUX and Chroma models in ComfyUI.
 
-This prior was randomly choosen previously, now we can assign it.
+## 🌟 Key Features
 
-Leaving the prior image input empty is OK just as previous.
+- **Full Chroma Compatibility**: First working implementation of PuLID with Chroma guidance
+- **Dual Model Support**: Works seamlessly with both standard FLUX and Chroma models
+- **Automatic Model Detection**: Intelligently switches between FLUX and Chroma implementations
+- **Face Identity Preservation**: Maintains consistent character faces across generations
+- **AMD GPU Optimized**: Tested and optimized for AMD RX 6900 XT (16GB VRAM)
 
-Please choose the best id image in your mind as the prior, or just experiment around and see what happens.
-![oct28](https://github.com/user-attachments/assets/6a481cd9-2836-4f6f-9ad5-7458356c332a)
+## 🚀 What's New
 
-## new features
-### common fusion methods for multi-image input
-mean(official), concat, max...etc
+### Chroma Model Support
+This fork introduces groundbreaking Chroma model compatibility, allowing you to use PuLID's powerful face identity preservation with Chroma's enhanced detail and artistic capabilities.
 
-### some further experimental fusion methods.
-using the norm of the conditions to weight them
+**Tested with**: chroma-unlocked-v35-detail-calibrated_float8_e4m3fn_scaled_stochastic.safetensors
 
-using the max norm token among images
+### Technical Improvements
+- Resolved dtype compatibility issues between BFloat16/Half precision
+- Implemented Chroma's custom modulation system
+- Fixed missing `time_in` attribute in Chroma models
+- Comprehensive dtype conversion throughout the pipeline
 
-a novel very fast embeddings self-training methods(explained here: https://github.com/balazik/ComfyUI-PuLID-Flux/issues/28)
+See [CHANGELOG.md](CHANGELOG.md) for detailed technical achievements.
 
-### switch between using gray image (official) and rgb.
-in some cases, using gray image will bring detail loss
+## 📦 Installation
 
-![2024-10-12_204047](https://github.com/user-attachments/assets/0ae96170-2eff-44e9-a53a-6a7447dbc0f1)
+1. Navigate to your ComfyUI custom nodes directory:
+   ```bash
+   cd ComfyUI/custom_nodes
+   ```
 
-## tricks make your generation better
-### fusion method leverages many id images to enhance fidelity
-1. Besides mean fusion, you can try max or max_token, which can boost some major feature of a face (like large eyes, special nose or sth). it can go distortion beyond fidelity though.
-2. With train_weight method, you can train with less than 2000 steps to make a deeper fusion than the non-training methods. Be aware too many training steps will make the training crash to the prior image.
+2. Clone this repository:
+   ```bash
+   git clone https://github.com/[your-username]/ComfyUI-PuLID-Flux-Chroma.git
+   ```
 
-### additional notes
-1. Flux is a high capacity base model, it even can cognize the input image in some super human way. 
-for example, you can resize your high quality input image with lanczos method rather than nearest area or billinear. you get finer texture. Keep in mind that taking care of your input image is the thing when the base model is strong.
-2. The best pulid weight is around 0.8-0.95 for flux pulid 0.9.0. 1.0 is not good. For 0.9.1, it's higher towards around 0.9-1.0. Nonetheless the 0.9.1 is not always better than 0.9.0.
-3. The base model is flux-dev or its finetuning, and the precision does mean the thing. fp16 should always be sound. fp8 is OK. I won't recommend gguf or nf4 things.
-4. Some of the finetuned flux dev model may have strong bias. for example, it may sway the faces to a certain human race.
-5. Euler simple is always working. Euler beta give you higher quality especially if your input image is somewhat low quality.
-6. If you wanna use 3rd party flux-d weight, better to use a merged one or with a lora weight, rather than a finetuned one. Full finetuning can hurt the connection between pulid and original flux-d base model. You can test by yourself though. 
+3. Install requirements:
+   ```bash
+   cd ComfyUI-PuLID-Flux-Chroma
+   pip install -r requirements.txt
+   ```
 
-## basic notes for common users
-This is an experimental node. It can give enhanced result but I'm not promising basic instructions for users who barely know about python developing or AI developing.
+4. Download the PuLID model:
+   - Download `pulid_flux_v0.9.1.safetensors` (1.06GB)
+   - Place it in `ComfyUI/models/pulid/`
 
-Please follow the comfyui instructions or https://github.com/balazik/ComfyUI-PuLID-Flux to enable usage.
+## 🎮 Usage
 
-If you are just using SDXL pulid, you can use https://github.com/cubiq/PuLID_ComfyUI. Some of the installation instructions there may also help.
+### Basic Workflow
+1. Load your Chroma or FLUX model as usual
+2. Add the "Apply PuLID Flux" node
+3. Connect your reference face image(s)
+4. The node automatically detects and adapts to your model type
+
+### Example Workflows
+- `chroma_pulid_test.json` - Basic Chroma + PuLID workflow
+- `flux_pulid_multi.json` - Multi-face FLUX workflow  
+- `pulid_flux_16bit_simple.json` - Simple 16-bit precision workflow
+
+### Optimal Settings for Chroma
+- Resolution: 768x768
+- Steps: 26 (Chroma's optimal)
+- PuLID weight: 0.9-1.0
+- Sampler: Euler Simple or Euler Beta
+
+## 🔧 Advanced Features
+
+All original PuLID-Flux-Enhanced features are preserved:
+
+### Fusion Methods
+- **mean** (official) - Balanced fusion of multiple faces
+- **concat** - Concatenate embeddings
+- **max/max_token** - Emphasize dominant features
+- **train_weight** - Novel fast embedding self-training
+
+### Additional Options
+- RGB/Gray image toggle
+- Prior image support for guided training
+- Multi-image input with various fusion strategies
+
+## 💡 Tips for Best Results
+
+1. **Image Quality**: Use high-quality reference images with clear faces
+2. **Image Size**: 1512x1512 reference images work well (avoid 4K+ images)
+3. **PuLID Weight**: 0.9-1.0 for v0.9.1 model
+4. **Precision**: fp16 recommended, fp8 acceptable, avoid gguf/nf4
+
+## 🙏 Credits
+
+This project builds upon the excellent work of:
+- Original PuLID-Flux implementation by [@balazik](https://github.com/balazik/ComfyUI-PuLID-Flux)
+- PuLID-Flux-Enhanced by [@sipie800](https://github.com/sipie800/ComfyUI-PuLID-Flux-Enhanced)
+- PuLID paper authors and researchers
+
+Special thanks to the Chroma community for inspiration and testing.
+
+## 📝 License
+
+This project inherits the original MIT License. See [LICENSE](LICENSE) for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+## ⚠️ Note
+
+This is an experimental implementation. While it works reliably with tested models, results may vary with different Chroma variants or custom FLUX fine-tunes.

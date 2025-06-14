@@ -67,7 +67,7 @@ class PulidFluxModel(nn.Module):
     def get_embeds(self, face_embed, clip_embeds):
         return self.pulid_encoder(face_embed, clip_embeds)
 
-def forward_orig(
+def forward_orig_flux(
     self,
     img: Tensor,
     img_ids: Tensor,
@@ -79,8 +79,9 @@ def forward_orig(
     control=None,
     transformer_options={},
     attn_mask: Tensor = None,
-    **kwargs # so it won't break if we add more stuff in the future
+    **kwargs
 ) -> Tensor:
+    """FLUX-style forward method with PuLID integration"""
     device = comfy.model_management.get_torch_device()
     patches_replace = transformer_options.get("patches_replace", {})
 
@@ -147,7 +148,16 @@ def forward_orig(
                         condition_start, condition_end).all()
                     
                     if condition:
-                        img = img + node_data['weight'] * self.pulid_ca[ca_idx].to(device)(node_data['embedding'], img)
+                        # Ensure dtype consistency for PuLID computation
+                        pulid_module = self.pulid_ca[ca_idx].to(device)
+                        # Get the dtype from the module's first parameter
+                        module_dtype = next(pulid_module.parameters()).dtype
+                        # Convert inputs to match module dtype
+                        embed_converted = node_data['embedding'].to(device, dtype=module_dtype)
+                        img_converted = img.to(device, dtype=module_dtype)
+                        # Compute and convert result back to original dtype
+                        pulid_out = pulid_module(embed_converted, img_converted)
+                        img = img + node_data['weight'] * pulid_out.to(img.dtype)
                 ca_idx += 1
 
     img = torch.cat((txt, img), 1)
@@ -191,13 +201,178 @@ def forward_orig(
                     condition = torch.logical_and(condition_start, condition_end).all()
 
                     if condition:
-                        real_img = real_img + node_data['weight'] * self.pulid_ca[ca_idx].to(device)(node_data['embedding'], real_img)
+                        # Ensure dtype consistency for PuLID computation
+                        pulid_module = self.pulid_ca[ca_idx].to(device)
+                        # Get the dtype from the module's first parameter
+                        module_dtype = next(pulid_module.parameters()).dtype
+                        # Convert inputs to match module dtype
+                        embed_converted = node_data['embedding'].to(device, dtype=module_dtype)
+                        real_img_converted = real_img.to(device, dtype=module_dtype)
+                        # Compute and convert result back to original dtype
+                        pulid_out = pulid_module(embed_converted, real_img_converted)
+                        real_img = real_img + node_data['weight'] * pulid_out.to(real_img.dtype)
                 ca_idx += 1
             img = torch.cat((txt, real_img), 1)
 
     img = img[:, txt.shape[1] :, ...]
 
     img = self.final_layer(img, vec)  # (N, T, patch_size ** 2 * out_channels)
+    return img
+
+def forward_orig_chroma(
+    self,
+    img: Tensor,
+    img_ids: Tensor,
+    txt: Tensor,
+    txt_ids: Tensor,
+    timesteps: Tensor,
+    guidance: Tensor = None,
+    control=None,
+    transformer_options={},
+    attn_mask: Tensor = None,
+    **kwargs
+) -> Tensor:
+    """Chroma-style forward method with PuLID integration - matches original Chroma forward_orig"""
+    device = comfy.model_management.get_torch_device()
+    patches_replace = transformer_options.get("patches_replace", {})
+    
+    if img.ndim != 3 or txt.ndim != 3:
+        raise ValueError("Input img and txt tensors must have 3 dimensions.")
+
+    # running on sequences img
+    img = self.img_in(img)
+
+    # distilled vector guidance - exactly match original Chroma implementation
+    mod_index_length = 344
+    distill_timestep = timestep_embedding(timesteps.detach().clone(), 16).to(img.device, img.dtype)
+    distil_guidance = timestep_embedding(guidance.detach().clone(), 16).to(img.device, img.dtype)
+
+    # get all modulation index
+    modulation_index = timestep_embedding(torch.arange(mod_index_length, device=img.device), 32).to(img.device, img.dtype)
+    # we need to broadcast the modulation index here so each batch has all of the index
+    modulation_index = modulation_index.unsqueeze(0).repeat(img.shape[0], 1, 1).to(img.device, img.dtype)
+    # and we need to broadcast timestep and guidance along too
+    timestep_guidance = torch.cat([distill_timestep, distil_guidance], dim=1).unsqueeze(1).repeat(1, mod_index_length, 1).to(img.dtype).to(img.device, img.dtype)
+    # then and only then we could concatenate it together
+    input_vec = torch.cat([timestep_guidance, modulation_index], dim=-1).to(img.device, img.dtype)
+
+    mod_vectors = self.distilled_guidance_layer(input_vec)
+
+    txt = self.txt_in(txt)
+
+    ids = torch.cat((txt_ids, img_ids), dim=1)
+    pe = self.pe_embedder(ids)
+
+    ca_idx = 0
+    blocks_replace = patches_replace.get("dit", {})
+    for i, block in enumerate(self.double_blocks):
+        if i not in self.skip_mmdit:
+            double_mod = (
+                self.get_modulations(mod_vectors, "double_img", idx=i),
+                self.get_modulations(mod_vectors, "double_txt", idx=i),
+            )
+            if ("double_block", i) in blocks_replace:
+                def block_wrap(args):
+                    out = {}
+                    out["img"], out["txt"] = block(img=args["img"],
+                                                   txt=args["txt"],
+                                                   vec=args["vec"],
+                                                   pe=args["pe"],
+                                                   attn_mask=args.get("attn_mask"))
+                    return out
+
+                out = blocks_replace[("double_block", i)]({"img": img,
+                                                           "txt": txt,
+                                                           "vec": double_mod,
+                                                           "pe": pe,
+                                                           "attn_mask": attn_mask},
+                                                          {"original_block": block_wrap})
+                txt = out["txt"]
+                img = out["img"]
+            else:
+                img, txt = block(img=img,
+                                 txt=txt,
+                                 vec=double_mod,
+                                 pe=pe,
+                                 attn_mask=attn_mask)
+
+            if control is not None: # Controlnet
+                control_i = control.get("input")
+                if i < len(control_i):
+                    add = control_i[i]
+                    if add is not None:
+                        img += add
+
+        # PuLID attention for Chroma
+        if self.pulid_data:
+            if i % self.pulid_double_interval == 0:
+                for _, node_data in self.pulid_data.items():
+                    condition_start = node_data['sigma_start'] >= timesteps
+                    condition_end = timesteps >= node_data['sigma_end']
+                    condition = torch.logical_and(condition_start, condition_end).all()
+                    
+                    if condition:
+                        # Ensure dtype consistency for PuLID computation
+                        pulid_module = self.pulid_ca[ca_idx].to(device)
+                        module_dtype = next(pulid_module.parameters()).dtype
+                        embed_converted = node_data['embedding'].to(device, dtype=module_dtype)
+                        img_converted = img.to(device, dtype=module_dtype)
+                        pulid_out = pulid_module(embed_converted, img_converted)
+                        img = img + node_data['weight'] * pulid_out.to(img.dtype)
+                ca_idx += 1
+
+    img = torch.cat((txt, img), 1)
+
+    for i, block in enumerate(self.single_blocks):
+        if i not in self.skip_dit:
+            single_mod = self.get_modulations(mod_vectors, "single", idx=i)
+            if ("single_block", i) in blocks_replace:
+                def block_wrap(args):
+                    out = {}
+                    out["img"] = block(args["img"],
+                                       vec=args["vec"],
+                                       pe=args["pe"],
+                                       attn_mask=args.get("attn_mask"))
+                    return out
+
+                out = blocks_replace[("single_block", i)]({"img": img,
+                                                           "vec": single_mod,
+                                                           "pe": pe,
+                                                           "attn_mask": attn_mask},
+                                                          {"original_block": block_wrap})
+                img = out["img"]
+            else:
+                img = block(img, vec=single_mod, pe=pe, attn_mask=attn_mask)
+
+            if control is not None: # Controlnet
+                control_o = control.get("output")
+                if i < len(control_o):
+                    add = control_o[i]
+                    if add is not None:
+                        img[:, txt.shape[1] :, ...] += add
+
+        # PuLID attention for single blocks in Chroma
+        if self.pulid_data:
+            real_img, txt = img[:, txt.shape[1]:, ...], img[:, :txt.shape[1], ...]
+            if i % self.pulid_single_interval == 0:
+                for _, node_data in self.pulid_data.items():
+                    condition_start = node_data['sigma_start'] >= timesteps
+                    condition_end = timesteps >= node_data['sigma_end']
+                    condition = torch.logical_and(condition_start, condition_end).all()
+
+                    if condition:
+                        pulid_module = self.pulid_ca[ca_idx].to(device)
+                        module_dtype = next(pulid_module.parameters()).dtype
+                        embed_converted = node_data['embedding'].to(device, dtype=module_dtype)
+                        real_img_converted = real_img.to(device, dtype=module_dtype)
+                        pulid_out = pulid_module(embed_converted, real_img_converted)
+                        real_img = real_img + node_data['weight'] * pulid_out.to(real_img.dtype)
+                ca_idx += 1
+            img = torch.cat((txt, real_img), 1)
+
+    img = img[:, txt.shape[1] :, ...]
+    final_mod = self.get_modulations(mod_vectors, "final")
+    img = self.final_layer(img, vec=final_mod)  # (N, T, patch_size ** 2 * out_channels)
     return img
 
 def tensor_to_image(tensor):
@@ -515,8 +690,13 @@ class ApplyPulidFlux:
             flux_model.pulid_double_interval = pulid_flux.double_interval
             flux_model.pulid_single_interval = pulid_flux.single_interval
             flux_model.pulid_data = {}
-            # Replace model forward_orig with our own
-            new_method = forward_orig.__get__(flux_model, flux_model.__class__)
+            # Detect model type and replace forward_orig with appropriate method
+            if hasattr(flux_model, 'distilled_guidance_layer'):
+                # Chroma model - use Chroma-specific forward method
+                new_method = forward_orig_chroma.__get__(flux_model, flux_model.__class__)
+            else:
+                # FLUX model - use FLUX-specific forward method
+                new_method = forward_orig_flux.__get__(flux_model, flux_model.__class__)
             setattr(flux_model, 'forward_orig', new_method)
 
         # Patch is already in place, add data (weight, embedding, sigma_start, sigma_end) under unique node index
