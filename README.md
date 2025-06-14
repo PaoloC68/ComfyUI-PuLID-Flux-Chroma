@@ -58,9 +58,23 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed technical achievements.
 4. The node automatically detects and adapts to your model type
 
 ### Example Workflows
-- `chroma_pulid_test.json` - Basic Chroma + PuLID workflow
-- `flux_pulid_multi.json` - Multi-face FLUX workflow  
-- `pulid_flux_16bit_simple.json` - Simple 16-bit precision workflow
+- `examples/chroma_pulid_basic.json` - Basic Chroma + PuLID workflow with clear documentation
+- `examples/chroma_pulid_fashion_showcase.json` - Fashion showcase demonstrating face consistency across multiple outfits
+- `examples/flux_pulid_multi.json` - Multi-face FLUX workflow (legacy FLUX support)
+
+### 🎭 Fashion Showcase Demo
+The fashion showcase workflow demonstrates PuLID's remarkable ability to maintain facial identity across completely different scenarios. This three-stage workflow creates:
+
+1. **Reference Portrait**: A neutral, professional headshot generated with Chroma
+2. **Swimsuit Scene**: The same face in an elegant swimsuit on a fashion catwalk
+3. **Evening Dress Scene**: The same face in a haute couture gown on a fashion catwalk
+
+| Reference Portrait | Swimsuit Scene | Evening Dress Scene |
+|:------------------:|:---------------:|:-------------------:|
+| ![Reference](examples/fashion_reference_00001_.png) | ![Swimsuit](examples/fashion_swimsuit_00001_.png) | ![Evening Dress](examples/fashion_evening_00001_.png) |
+| *Base face generated with Chroma* | *Same identity in swimsuit* | *Same identity in evening wear* |
+
+Notice how PuLID preserves the facial features, bone structure, and overall identity while allowing complete freedom in styling, outfit, and pose. This demonstrates the power of combining Chroma's artistic capabilities with PuLID's identity preservation.
 
 ### Optimal Settings for Chroma
 - Resolution: 768x768

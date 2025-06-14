@@ -1,0 +1,1305 @@
+{
+  "id": "chroma-pulid-fashion-showcase",
+  "revision": 1,
+  "last_node_id": 50,
+  "last_link_id": 70,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [50, 50],
+      "size": [315, 82],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [1, 40, 50]
+        }
+      ],
+      "title": "🎨 Chroma Model",
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "chroma-unlocked-v35-detail-calibrated_float8_e4m3fn_scaled_stochastic.safetensors",
+        "default"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "CLIPLoader",
+      "pos": [50, 150],
+      "size": [315, 106],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [2]
+        }
+      ],
+      "title": "🔥 Chroma CLIP",
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "chroma",
+        "default"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "T5TokenizerOptions",
+      "pos": [400, 150],
+      "size": [210, 82],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [3, 4, 5, 6, 7, 8]
+        }
+      ],
+      "title": "🔧 T5 Options",
+      "properties": {
+        "Node name for S&R": "T5TokenizerOptions"
+      },
+      "widgets_values": [1, 0]
+    },
+    {
+      "id": 4,
+      "type": "VAELoader",
+      "pos": [50, 280],
+      "size": [315, 58],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [9, 41, 51]
+        }
+      ],
+      "title": "🔧 VAE",
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": ["ae.safetensors"]
+    },
+    {
+      "id": 5,
+      "type": "PulidFluxModelLoader",
+      "pos": [50, 370],
+      "size": [355, 58],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "PULIDFLUX",
+          "type": "PULIDFLUX",
+          "links": [42, 52]
+        }
+      ],
+      "title": "🎯 PuLID Flux Model",
+      "properties": {
+        "Node name for S&R": "PulidFluxModelLoader"
+      },
+      "widgets_values": ["pulid_flux_v0.9.1.safetensors"]
+    },
+    {
+      "id": 6,
+      "type": "PulidFluxEvaClipLoader",
+      "pos": [50, 450],
+      "size": [274, 26],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "EVA_CLIP",
+          "type": "EVA_CLIP",
+          "links": [43, 53]
+        }
+      ],
+      "title": "🔧 EVA CLIP",
+      "properties": {
+        "Node name for S&R": "PulidFluxEvaClipLoader"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 7,
+      "type": "PulidFluxInsightFaceLoader",
+      "pos": [50, 500],
+      "size": [268, 58],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "FACEANALYSIS",
+          "type": "FACEANALYSIS",
+          "links": [44, 54]
+        }
+      ],
+      "title": "🔍 Face Analysis",
+      "properties": {
+        "Node name for S&R": "PulidFluxInsightFaceLoader"
+      },
+      "widgets_values": ["ROCM"]
+    },
+    {
+      "id": 10,
+      "type": "CLIPTextEncode",
+      "pos": [650, 50],
+      "size": [450, 150],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [10]
+        }
+      ],
+      "title": "✨ Reference Photo Prompt",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "beautiful woman, 25 years old, natural beauty, professional model headshot, soft studio lighting, neutral expression, clear skin, photorealistic portrait, high quality photography"
+      ]
+    },
+    {
+      "id": 11,
+      "type": "CLIPTextEncode",
+      "pos": [650, 220],
+      "size": [450, 100],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [11]
+        }
+      ],
+      "title": "❌ Negative (All Generations)",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "blurry, low quality, distorted, bad anatomy, disfigured, mutation, extra limbs, ugly, deformed face, bad proportions, watermark, text, signature, cropped, out of frame"
+      ]
+    },
+    {
+      "id": 12,
+      "type": "EmptySD3LatentImage",
+      "pos": [1150, 100],
+      "size": [210, 106],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [12]
+        }
+      ],
+      "title": "🖼️ Reference Latent",
+      "properties": {
+        "Node name for S&R": "EmptySD3LatentImage"
+      },
+      "widgets_values": [768, 768, 1]
+    },
+    {
+      "id": 13,
+      "type": "CFGGuider",
+      "pos": [1150, 220],
+      "size": [210, 98],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 10
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [13]
+        }
+      ],
+      "title": "🎯 CFG Guider",
+      "properties": {
+        "Node name for S&R": "CFGGuider"
+      },
+      "widgets_values": [4]
+    },
+    {
+      "id": 14,
+      "type": "RandomNoise",
+      "pos": [1400, 100],
+      "size": [210, 82],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [14]
+        }
+      ],
+      "title": "🎲 Seed (Reference)",
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [42, "fixed"]
+    },
+    {
+      "id": 15,
+      "type": "KSamplerSelect",
+      "pos": [1400, 200],
+      "size": [210, 58],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [15]
+        }
+      ],
+      "title": "🎯 Euler Sampler",
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": ["euler"]
+    },
+    {
+      "id": 16,
+      "type": "BasicScheduler",
+      "pos": [1400, 280],
+      "size": [210, 106],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 40
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [16]
+        }
+      ],
+      "title": "⏱️ Beta Scheduler",
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": ["beta", 26, 1]
+    },
+    {
+      "id": 17,
+      "type": "SamplerCustomAdvanced",
+      "pos": [1650, 100],
+      "size": [270, 330],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 14
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 13
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 15
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 16
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [17]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "title": "🚀 Generate Reference",
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 18,
+      "type": "VAEDecode",
+      "pos": [1950, 200],
+      "size": [210, 46],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 17
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [18, 19, 45, 55]
+        }
+      ],
+      "title": "🖼️ Decode Reference",
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 19,
+      "type": "PreviewImage",
+      "pos": [2200, 50],
+      "size": [400, 400],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 18
+        }
+      ],
+      "outputs": [],
+      "title": "👤 Reference Face",
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 20,
+      "type": "SaveImage",
+      "pos": [2200, 480],
+      "size": [400, 270],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 19
+        }
+      ],
+      "outputs": [],
+      "title": "💾 Save Reference",
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": ["fashion_reference"]
+    },
+    {
+      "id": 30,
+      "type": "ApplyPulidFlux",
+      "pos": [650, 550],
+      "size": [315, 346],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 50
+        },
+        {
+          "name": "pulid_flux",
+          "type": "PULIDFLUX",
+          "link": 42
+        },
+        {
+          "name": "eva_clip",
+          "type": "EVA_CLIP",
+          "link": 43
+        },
+        {
+          "name": "face_analysis",
+          "type": "FACEANALYSIS",
+          "link": 44
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 45
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [30, 31]
+        }
+      ],
+      "title": "🎭 Apply PuLID (Swimsuit)",
+      "properties": {
+        "Node name for S&R": "ApplyPulidFlux"
+      },
+      "widgets_values": [0.5, 0, 1, "concat", 1, 0, 6000, false]
+    },
+    {
+      "id": 31,
+      "type": "CLIPTextEncode",
+      "pos": [1000, 550],
+      "size": [450, 150],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [32]
+        }
+      ],
+      "title": "👙 Swimsuit Prompt",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "beautiful woman wearing elegant designer swimsuit, fashion show catwalk, professional runway photography, confident pose, studio lighting, high fashion photography, full body shot"
+      ]
+    },
+    {
+      "id": 32,
+      "type": "CLIPTextEncode",
+      "pos": [1000, 720],
+      "size": [450, 100],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [33]
+        }
+      ],
+      "title": "❌ Negative",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "blurry, low quality, distorted, bad anatomy, disfigured, mutation, extra limbs, ugly, deformed face, bad proportions, watermark, text"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "EmptySD3LatentImage",
+      "pos": [1500, 550],
+      "size": [210, 106],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [34]
+        }
+      ],
+      "title": "🖼️ Swimsuit Latent",
+      "properties": {
+        "Node name for S&R": "EmptySD3LatentImage"
+      },
+      "widgets_values": [768, 768, 1]
+    },
+    {
+      "id": 34,
+      "type": "CFGGuider",
+      "pos": [1500, 670],
+      "size": [210, 98],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 30
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 32
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 33
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [35]
+        }
+      ],
+      "title": "🎯 CFG Guider",
+      "properties": {
+        "Node name for S&R": "CFGGuider"
+      },
+      "widgets_values": [4]
+    },
+    {
+      "id": 35,
+      "type": "RandomNoise",
+      "pos": [1750, 550],
+      "size": [210, 82],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [36]
+        }
+      ],
+      "title": "🎲 Seed (Swimsuit)",
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [123, "fixed"]
+    },
+    {
+      "id": 36,
+      "type": "BasicScheduler",
+      "pos": [1750, 650],
+      "size": [210, 106],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 31
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [37]
+        }
+      ],
+      "title": "⏱️ Beta Scheduler",
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": ["beta", 26, 1]
+    },
+    {
+      "id": 37,
+      "type": "SamplerCustomAdvanced",
+      "pos": [2000, 550],
+      "size": [270, 330],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 36
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 35
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 15
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 37
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 34
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [38]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "title": "🚀 Generate Swimsuit",
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 38,
+      "type": "VAEDecode",
+      "pos": [2300, 650],
+      "size": [210, 46],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 38
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 41
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [39, 60]
+        }
+      ],
+      "title": "🖼️ Decode Swimsuit",
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 39,
+      "type": "PreviewImage",
+      "pos": [2550, 500],
+      "size": [400, 400],
+      "flags": {},
+      "order": 27,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 39
+        }
+      ],
+      "outputs": [],
+      "title": "👙 Swimsuit Result",
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 40,
+      "type": "ApplyPulidFlux",
+      "pos": [650, 950],
+      "size": [315, 346],
+      "flags": {},
+      "order": 28,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 50
+        },
+        {
+          "name": "pulid_flux",
+          "type": "PULIDFLUX",
+          "link": 52
+        },
+        {
+          "name": "eva_clip",
+          "type": "EVA_CLIP",
+          "link": 53
+        },
+        {
+          "name": "face_analysis",
+          "type": "FACEANALYSIS",
+          "link": 54
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 55
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [56, 57]
+        }
+      ],
+      "title": "🎭 Apply PuLID (Evening Dress)",
+      "properties": {
+        "Node name for S&R": "ApplyPulidFlux"
+      },
+      "widgets_values": [0.5, 0, 1, "concat", 1, 0, 6000, false]
+    },
+    {
+      "id": 41,
+      "type": "CLIPTextEncode",
+      "pos": [1000, 950],
+      "size": [450, 150],
+      "flags": {},
+      "order": 29,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [58]
+        }
+      ],
+      "title": "👗 Evening Dress Prompt",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "beautiful woman wearing elegant evening dress, haute couture gown, fashion show catwalk, glamorous pose, spotlight, luxury fashion photography, full body shot, red carpet style"
+      ]
+    },
+    {
+      "id": 42,
+      "type": "CLIPTextEncode",
+      "pos": [1000, 1120],
+      "size": [450, 100],
+      "flags": {},
+      "order": 30,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [59]
+        }
+      ],
+      "title": "❌ Negative",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "blurry, low quality, distorted, bad anatomy, disfigured, mutation, extra limbs, ugly, deformed face, bad proportions, watermark, text"
+      ]
+    },
+    {
+      "id": 43,
+      "type": "EmptySD3LatentImage",
+      "pos": [1500, 950],
+      "size": [210, 106],
+      "flags": {},
+      "order": 31,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [61]
+        }
+      ],
+      "title": "🖼️ Evening Latent",
+      "properties": {
+        "Node name for S&R": "EmptySD3LatentImage"
+      },
+      "widgets_values": [768, 768, 1]
+    },
+    {
+      "id": 44,
+      "type": "CFGGuider",
+      "pos": [1500, 1070],
+      "size": [210, 98],
+      "flags": {},
+      "order": 32,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 56
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 58
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 59
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [62]
+        }
+      ],
+      "title": "🎯 CFG Guider",
+      "properties": {
+        "Node name for S&R": "CFGGuider"
+      },
+      "widgets_values": [4]
+    },
+    {
+      "id": 45,
+      "type": "RandomNoise",
+      "pos": [1750, 950],
+      "size": [210, 82],
+      "flags": {},
+      "order": 33,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [63]
+        }
+      ],
+      "title": "🎲 Seed (Evening)",
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [456, "fixed"]
+    },
+    {
+      "id": 46,
+      "type": "BasicScheduler",
+      "pos": [1750, 1050],
+      "size": [210, 106],
+      "flags": {},
+      "order": 34,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 57
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [64]
+        }
+      ],
+      "title": "⏱️ Beta Scheduler",
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": ["beta", 26, 1]
+    },
+    {
+      "id": 47,
+      "type": "SamplerCustomAdvanced",
+      "pos": [2000, 950],
+      "size": [270, 330],
+      "flags": {},
+      "order": 35,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 63
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 62
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 15
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 64
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 61
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [65]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "title": "🚀 Generate Evening",
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 48,
+      "type": "VAEDecode",
+      "pos": [2300, 1050],
+      "size": [210, 46],
+      "flags": {},
+      "order": 36,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 65
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 51
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [66, 67]
+        }
+      ],
+      "title": "🖼️ Decode Evening",
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 49,
+      "type": "PreviewImage",
+      "pos": [2550, 900],
+      "size": [400, 400],
+      "flags": {},
+      "order": 37,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 66
+        }
+      ],
+      "outputs": [],
+      "title": "👗 Evening Dress Result",
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 50,
+      "type": "SaveImage",
+      "pos": [3000, 700],
+      "size": [315, 290],
+      "flags": {},
+      "order": 38,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 60
+        }
+      ],
+      "outputs": [],
+      "title": "💾 Save Swimsuit",
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": ["fashion_swimsuit"]
+    },
+    {
+      "id": 51,
+      "type": "SaveImage",
+      "pos": [3000, 1020],
+      "size": [315, 290],
+      "flags": {},
+      "order": 39,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 67
+        }
+      ],
+      "outputs": [],
+      "title": "💾 Save Evening Dress",
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": ["fashion_evening"]
+    },
+    {
+      "id": 52,
+      "type": "Note",
+      "pos": [50, 1350],
+      "size": [1200, 350],
+      "flags": {},
+      "order": 40,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "📋 PuLID Fashion Showcase Workflow",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "🎭 PULID FACE CONSISTENCY FASHION SHOWCASE\n\nThis workflow demonstrates how PuLID maintains facial identity across different fashion scenarios:\n\n1️⃣ REFERENCE GENERATION:\n   - First, we generate a neutral reference photo of a beautiful woman using Chroma\n   - This creates a consistent base face for PuLID to work with\n\n2️⃣ FASHION SCENE 1 - SWIMSUIT:\n   - Uses the generated reference face with PuLID\n   - Creates the same woman in a swimsuit on a fashion catwalk\n   - Maintains facial features while changing outfit and pose\n\n3️⃣ FASHION SCENE 2 - EVENING DRESS:\n   - Same reference face applied to elegant evening wear scenario\n   - Shows versatility of face consistency across different fashion contexts\n\n🔧 KEY SETTINGS:\n   - PuLID Weight: 0.5 (balanced for natural integration)\n   - Resolution: 768x768 (optimal for Chroma)\n   - Steps: 26 (Chroma's sweet spot)\n   - CFG: 4 (recommended for Chroma)\n   - Different seeds for variety while maintaining face identity\n\n💡 TIPS:\n   - Adjust PuLID weight (0.3-0.7) to control identity strength\n   - Use consistent lighting descriptions for better coherence\n   - Keep prompts focused on outfit/scene changes, not facial features"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [1, 1, 0, 13, 0, "MODEL"],
+    [2, 2, 0, 3, 0, "CLIP"],
+    [3, 3, 0, 10, 0, "CLIP"],
+    [4, 3, 0, 11, 0, "CLIP"],
+    [5, 3, 0, 31, 0, "CLIP"],
+    [6, 3, 0, 32, 0, "CLIP"],
+    [7, 3, 0, 41, 0, "CLIP"],
+    [8, 3, 0, 42, 0, "CLIP"],
+    [9, 4, 0, 18, 1, "VAE"],
+    [10, 10, 0, 13, 1, "CONDITIONING"],
+    [11, 11, 0, 13, 2, "CONDITIONING"],
+    [12, 12, 0, 17, 4, "LATENT"],
+    [13, 13, 0, 17, 1, "GUIDER"],
+    [14, 14, 0, 17, 0, "NOISE"],
+    [15, 15, 0, 17, 2, "SAMPLER"],
+    [16, 16, 0, 17, 3, "SIGMAS"],
+    [17, 17, 0, 18, 0, "LATENT"],
+    [18, 18, 0, 19, 0, "IMAGE"],
+    [19, 18, 0, 20, 0, "IMAGE"],
+    [30, 30, 0, 34, 0, "MODEL"],
+    [31, 30, 0, 36, 0, "MODEL"],
+    [32, 31, 0, 34, 1, "CONDITIONING"],
+    [33, 32, 0, 34, 2, "CONDITIONING"],
+    [34, 33, 0, 37, 4, "LATENT"],
+    [35, 34, 0, 37, 1, "GUIDER"],
+    [36, 35, 0, 37, 0, "NOISE"],
+    [37, 36, 0, 37, 3, "SIGMAS"],
+    [38, 37, 0, 38, 0, "LATENT"],
+    [39, 38, 0, 39, 0, "IMAGE"],
+    [40, 1, 0, 16, 0, "MODEL"],
+    [41, 4, 0, 38, 1, "VAE"],
+    [42, 5, 0, 30, 1, "PULIDFLUX"],
+    [43, 6, 0, 30, 2, "EVA_CLIP"],
+    [44, 7, 0, 30, 3, "FACEANALYSIS"],
+    [45, 18, 0, 30, 4, "IMAGE"],
+    [50, 1, 0, 30, 0, "MODEL"],
+    [51, 4, 0, 48, 1, "VAE"],
+    [52, 5, 0, 40, 1, "PULIDFLUX"],
+    [53, 6, 0, 40, 2, "EVA_CLIP"],
+    [54, 7, 0, 40, 3, "FACEANALYSIS"],
+    [55, 18, 0, 40, 4, "IMAGE"],
+    [56, 40, 0, 44, 0, "MODEL"],
+    [57, 40, 0, 46, 0, "MODEL"],
+    [58, 41, 0, 44, 1, "CONDITIONING"],
+    [59, 42, 0, 44, 2, "CONDITIONING"],
+    [60, 38, 0, 50, 0, "IMAGE"],
+    [61, 43, 0, 47, 4, "LATENT"],
+    [62, 44, 0, 47, 1, "GUIDER"],
+    [63, 45, 0, 47, 0, "NOISE"],
+    [64, 46, 0, 47, 3, "SIGMAS"],
+    [65, 47, 0, 48, 0, "LATENT"],
+    [66, 48, 0, 49, 0, "IMAGE"],
+    [67, 48, 0, 51, 0, "IMAGE"],
+    [15, 15, 0, 37, 2, "SAMPLER"],
+    [15, 15, 0, 47, 2, "SAMPLER"],
+    [50, 1, 0, 40, 0, "MODEL"]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "🎨 Reference Photo Generation",
+      "bounding": [30, 10, 2600, 770],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "👙 Fashion Scene 1: Swimsuit",
+      "bounding": [630, 500, 2350, 430],
+      "color": "#8e3f79",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "👗 Fashion Scene 2: Evening Dress",
+      "bounding": [630, 900, 2700, 430],
+      "color": "#793f8e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.4,
+      "offset": [0, 0]
+    }
+  },
+  "version": 0.4
+}

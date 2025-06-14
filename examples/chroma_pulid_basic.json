@@ -1,0 +1,706 @@
+{
+  "id": "chroma-pulid-basic",
+  "revision": 1,
+  "last_node_id": 35,
+  "last_link_id": 50,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "CLIPLoader",
+      "pos": [50, 150],
+      "size": [315, 106],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [30]
+        }
+      ],
+      "title": "Chroma CLIP Loader (T5XXL)",
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "chroma",
+        "default"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "T5TokenizerOptions",
+      "pos": [400, 150],
+      "size": [210, 82],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 30
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [2, 3]
+        }
+      ],
+      "title": "T5 Tokenizer Configuration",
+      "properties": {
+        "Node name for S&R": "T5TokenizerOptions"
+      },
+      "widgets_values": [1, 0]
+    },
+    {
+      "id": 3,
+      "type": "VAELoader",
+      "pos": [50, 280],
+      "size": [315, 58],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [4]
+        }
+      ],
+      "title": "VAE Decoder Model",
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": ["ae.safetensors"]
+    },
+    {
+      "id": 5,
+      "type": "PulidFluxModelLoader",
+      "pos": [50, 370],
+      "size": [355, 58],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "PULIDFLUX",
+          "type": "PULIDFLUX",
+          "links": [6]
+        }
+      ],
+      "title": "Load PuLID Flux Model",
+      "properties": {
+        "Node name for S&R": "PulidFluxModelLoader"
+      },
+      "widgets_values": ["pulid_flux_v0.9.1.safetensors"]
+    },
+    {
+      "id": 6,
+      "type": "PulidFluxEvaClipLoader",
+      "pos": [50, 450],
+      "size": [274, 26],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "EVA_CLIP",
+          "type": "EVA_CLIP",
+          "links": [7]
+        }
+      ],
+      "title": "Load Eva Clip (PuLID Flux)",
+      "properties": {
+        "Node name for S&R": "PulidFluxEvaClipLoader"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 7,
+      "type": "PulidFluxInsightFaceLoader",
+      "pos": [50, 500],
+      "size": [268, 58],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "FACEANALYSIS",
+          "type": "FACEANALYSIS",
+          "links": [8]
+        }
+      ],
+      "title": "Load InsightFace (PuLID Flux)",
+      "properties": {
+        "Node name for S&R": "PulidFluxInsightFaceLoader"
+      },
+      "widgets_values": ["ROCM"]
+    },
+    {
+      "id": 4,
+      "type": "LoadImage",
+      "pos": [50, 580],
+      "size": [315, 314],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [5]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference Face Image",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": ["example.png", "image"]
+    },
+    {
+      "id": 11,
+      "type": "ApplyPulidFlux",
+      "pos": [450, 370],
+      "size": [315, 346],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "name": "pulid_flux",
+          "type": "PULIDFLUX",
+          "link": 6
+        },
+        {
+          "name": "eva_clip",
+          "type": "EVA_CLIP",
+          "link": 7
+        },
+        {
+          "name": "face_analysis",
+          "type": "FACEANALYSIS",
+          "link": 8
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [14, 22]
+        }
+      ],
+      "title": "Apply PuLID Flux",
+      "properties": {
+        "Node name for S&R": "ApplyPulidFlux"
+      },
+      "widgets_values": [
+        0.9,
+        0,
+        1,
+        "concat",
+        1,
+        0,
+        6000,
+        false
+      ]
+    },
+    {
+      "id": 9,
+      "type": "PrimitiveNode",
+      "pos": [800, 450],
+      "size": [210, 82],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "links": [12]
+        }
+      ],
+      "title": "Image Width",
+      "properties": {},
+      "widgets_values": [768, "fixed"]
+    },
+    {
+      "id": 10,
+      "type": "PrimitiveNode",
+      "pos": [800, 550],
+      "size": [210, 82],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "links": [13]
+        }
+      ],
+      "title": "Image Height",
+      "properties": {},
+      "widgets_values": [768, "fixed"]
+    },
+    {
+      "id": 12,
+      "type": "EmptySD3LatentImage",
+      "pos": [800, 650],
+      "size": [210, 106],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 12
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [15]
+        }
+      ],
+      "title": "Empty Latent Image",
+      "properties": {
+        "Node name for S&R": "EmptySD3LatentImage"
+      },
+      "widgets_values": [768, 768, 1]
+    },
+    {
+      "id": 13,
+      "type": "CLIPTextEncode",
+      "pos": [1050, 50],
+      "size": [450, 200],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [18]
+        }
+      ],
+      "title": "Positive Prompt (Face Description)",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "a beautiful woman with natural skin, photorealistic portrait, professional photography, soft lighting, detailed facial features"
+      ]
+    },
+    {
+      "id": 14,
+      "type": "CLIPTextEncode",
+      "pos": [1050, 280],
+      "size": [450, 150],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [17]
+        }
+      ],
+      "title": "Negative Prompt",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "blurry, low quality, distorted, bad anatomy, disfigured, mutation, extra limbs, ugly, deformed face, bad proportions, watermark, text, signature, cropped, out of frame, noise, static, artifacts"
+      ]
+    },
+    {
+      "id": 16,
+      "type": "CFGGuider",
+      "pos": [1550, 200],
+      "size": [315, 98],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 14
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 18
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [19]
+        }
+      ],
+      "title": "CFG Guider",
+      "properties": {
+        "Node name for S&R": "CFGGuider"
+      },
+      "widgets_values": [4]
+    },
+    {
+      "id": 17,
+      "type": "RandomNoise",
+      "pos": [1550, 320],
+      "size": [315, 82],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [20]
+        }
+      ],
+      "title": "Random Noise Generator",
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [42, "fixed"]
+    },
+    {
+      "id": 18,
+      "type": "KSamplerSelect",
+      "pos": [1550, 420],
+      "size": [315, 58],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [21]
+        }
+      ],
+      "title": "Sampler Selection",
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": ["euler"]
+    },
+    {
+      "id": 19,
+      "type": "BasicScheduler",
+      "pos": [1550, 500],
+      "size": [315, 106],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 22
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [23]
+        }
+      ],
+      "title": "Scheduler (26 Steps)",
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": ["beta", 26, 1]
+    },
+    {
+      "id": 20,
+      "type": "SamplerCustomAdvanced",
+      "pos": [1900, 100],
+      "size": [270, 330],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 20
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 19
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 21
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 23
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [24]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "title": "Generate Image",
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 21,
+      "type": "VAEDecode",
+      "pos": [2200, 200],
+      "size": [210, 46],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 24
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [25, 26]
+        }
+      ],
+      "title": "Decode Image",
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [50, 50],
+      "size": [315, 82],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [1]
+        }
+      ],
+      "title": "Chroma Model Loader",
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "chroma-unlocked-v35-detail-calibrated_float8_e4m3fn_scaled_stochastic.safetensors",
+        "default"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "PreviewImage",
+      "pos": [2450, 100],
+      "size": [400, 400],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 25
+        }
+      ],
+      "outputs": [],
+      "title": "Preview Result",
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 23,
+      "type": "SaveImage",
+      "pos": [2900, 100],
+      "size": [315, 270],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 26
+        }
+      ],
+      "outputs": [],
+      "title": "Save Result",
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": ["chroma_pulid_output"]
+    },
+    {
+      "id": 26,
+      "type": "Note",
+      "pos": [50, 920],
+      "size": [950, 250],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "Chroma + PuLID Quick Start Guide",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "CHROMA + PULID BASIC EXAMPLE\n\nThis workflow demonstrates face-consistent generation using PuLID with Chroma models.\n\nQUICK START:\n1. Load your reference face image in 'Reference Face Image' node\n2. Edit the positive prompt to describe your desired output\n3. Adjust PuLID weight (0.9 default, range 0.5-1.0 for Chroma)\n4. Click Queue Prompt to generate\n\nKEY SETTINGS:\n• Resolution: 768x768 (Chroma optimal)\n• Steps: 26 (Chroma recommended)\n• CFG: 4 (Chroma optimal)\n• Sampler: Euler (switch to Euler Beta for higher quality)\n• PuLID Weight: 0.9 (adjust based on results)\n\nTIPS:\n• Use clear, well-lit reference photos\n• Avoid extremely high resolution reference images\n• If face identity is weak, increase PuLID weight\n• If getting artifacts, reduce PuLID weight"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [1, 1, 0, 11, 0, "MODEL"],
+    [2, 30, 0, 13, 0, "CLIP"],
+    [3, 30, 0, 14, 0, "CLIP"],
+    [4, 3, 0, 21, 1, "VAE"],
+    [5, 4, 0, 11, 4, "IMAGE"],
+    [6, 5, 0, 11, 1, "PULIDFLUX"],
+    [7, 6, 0, 11, 2, "EVA_CLIP"],
+    [8, 7, 0, 11, 3, "FACEANALYSIS"],
+    [12, 9, 0, 12, 0, "INT"],
+    [13, 10, 0, 12, 1, "INT"],
+    [14, 11, 0, 16, 0, "MODEL"],
+    [15, 12, 0, 20, 4, "LATENT"],
+    [17, 14, 0, 16, 2, "CONDITIONING"],
+    [18, 13, 0, 16, 1, "CONDITIONING"],
+    [19, 16, 0, 20, 1, "GUIDER"],
+    [20, 17, 0, 20, 0, "NOISE"],
+    [21, 18, 0, 20, 2, "SAMPLER"],
+    [22, 11, 0, 19, 0, "MODEL"],
+    [23, 19, 0, 20, 3, "SIGMAS"],
+    [24, 20, 0, 21, 0, "LATENT"],
+    [25, 21, 0, 22, 0, "IMAGE"],
+    [26, 21, 0, 23, 0, "IMAGE"],
+    [30, 2, 0, 30, 0, "CLIP"]
+  ],
+  "groups": [
+    {
+      "title": "Chroma + PuLID Face Identity Preservation",
+      "bounding": [30, 10, 3200, 1200],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.5,
+      "offset": [0, 0]
+    }
+  },
+  "version": 0.4
+}
